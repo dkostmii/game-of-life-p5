@@ -44,7 +44,11 @@ function getArrayRandom(cols, rows) {
 let state; // current state
 let cols;
 let rows;
-let resolution = 50;
+let resolution = 25;
+
+let canvasWidth = 800
+let canvasHeight = 800
+let isTouch = false
 
 let paused = true
 
@@ -59,6 +63,7 @@ let dead = false
 // Colors
 let primary
 let secondary
+
 
 function btnStartPressed() {
   const btnStart = document.getElementById('btn-start')
@@ -141,15 +146,34 @@ window.addEventListener('load', () => {
   btnClear.addEventListener("click", btnClearPressed)
 
   fpsCount.addEventListener("change", fpsCountChanged)
+
+
+  function is_touch_device() {
+    const ua = navigator.userAgent
+    try {  
+      document.createEvent("TouchEvent");
+      if (ua.match(/(iPhone|iPod|iPad)/) 
+        || ua.match(/BlackBerry/) || ua.match(/Android/)) {
+        return true;
+      }  
+    } catch (e) {  
+        return false;  
+    }  
+  }
+  isTouch = is_touch_device()
 })
 
 // Initial setup
 
 function setup() {
-  createCanvas(800, 800);
+  if (window.innerWidth < 800) {
+    canvasWidth = Math.floor(window.innerWidth / 100) * 100
+    canvasHeight = canvasWidth
+  }
+  createCanvas(canvasWidth, canvasHeight);
 
-  cols = width / resolution;
-  rows = height / resolution;
+  cols = Math.floor(width / resolution);
+  rows = Math.floor(height / resolution);
 
   state = getArrayZeros(cols, rows)
   primary = color('#10d53d')
@@ -186,7 +210,7 @@ function draw() {
           line(0, y, width, y)
         }
 
-        if (Array.isArray(hoverPos)) {
+        if (Array.isArray(hoverPos) && !isTouch) {
           fill(128)
           noStroke()
           rect(hoverPos[0] * resolution, hoverPos[1] * resolution, resolution, resolution)
@@ -241,14 +265,16 @@ function mouseClicked() {
 }
 
 function mouseMoved() {
-  if (paused) {
-    if (mouseX < width && mouseX > 0 && mouseY < height && mouseY > 0) {
-      const x = Math.floor(map(mouseX, 0, width, 0, cols))
-      const y = Math.floor(map(mouseY, 0, height, 0, rows))
+  if (!isTouch) {
+    if (paused) {
+      if (mouseX < width && mouseX > 0 && mouseY < height && mouseY > 0) {
+        const x = Math.floor(map(mouseX, 0, width, 0, cols))
+        const y = Math.floor(map(mouseY, 0, height, 0, rows))
 
-      hoverPos = [x, y]
-    } else {
-      hoverPos = null
+        hoverPos = [x, y]
+      } else {
+        hoverPos = null
+      }
     }
   }
 }
