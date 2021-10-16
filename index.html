@@ -23,7 +23,7 @@
       margin: 30px;
     }
 
-    button {
+    button, input[type="number"] {
       background: none;
       font-size: 24px;
       color: white;
@@ -33,6 +33,10 @@
       outline-offset: 8px;
 
       cursor: pointer;
+    }
+
+    input[type="number"] {
+      width: 96px;
     }
 
     button:active {
@@ -48,10 +52,22 @@
     }
 
 
-    .controls {
+    .buttons, .controls {
       display: flex;
       gap: 24px;
     }
+
+    .controls {
+      flex-direction: column;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      width: 96px;
+      gap: 16px;
+    }
+
   </style>
 </head>
 <body>
@@ -59,8 +75,15 @@
   <script src="sketch.js"></script>
 
   <div class="controls">
-    <button id="btn-start">Start</button>
-    <button id="btn-clear">Clear</button>
+    <div class="buttons">
+      <button id="btn-start">Start</button>
+      <button id="btn-clear">Clear</button>
+    </div>
+    <label>
+      Iterations per second: 
+      <input id="fps-count" type="number" min="1" max="480" value="30" />
+    </label>
   </div>
+  
 </body>
 </html>

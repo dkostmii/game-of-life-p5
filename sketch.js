@@ -50,17 +50,52 @@ let paused = true
 
 let hoverPos;
 
+let fps;
+let pendingFrames = 0
+
+let dead = false
+
 
 // Colors
 let primary
 let secondary
 
 function btnStartPressed() {
+  const btnStart = document.getElementById('btn-start')
+  const btnClear = document.getElementById('btn-clear')
+  const fpsCount = document.getElementById('fps-count')
+
+  if (!btnStart) {
+    throw new Error("btn-start element not found!")
+  }
+
+  if (!btnClear) {
+    throw new Error("btn-clear element not found")
+  }
+
+  if (!fpsCount) {
+    throw new Error("fps-count element not found")
+  }
+
   if (typeof paused === 'undefined') {
     throw new Error('paused is undefined')
   }
 
   paused = !paused
+
+  dead = false
+
+  if (paused) {
+    if (btnClear.hasAttribute('disabled')) {
+      btnClear.removeAttribute('disabled')
+    }
+
+    btnStart.innerHTML = 'Start'
+
+  } else {
+    btnClear.setAttribute('disabled', 'true')
+    btnStart.innerHTML = 'Pause'
+  }
 }
 
 function btnClearPressed() {
@@ -71,9 +106,24 @@ function btnClearPressed() {
   }
 }
 
+function fpsCountChanged(e) {
+  const fpsCount = parseInt(e.target.value)
+  if (!fpsCount) {
+    throw new Error("fpsCount is undefined")
+  }
+
+  if (fpsCount > 0 && fpsCount <= 480) {
+    fps = fpsCount
+    pendingFrames = 0
+  } else {
+    throw new Error("Invalid fps count specified")
+  }
+}
+
 window.addEventListener('load', () => {
   const btnStart = document.getElementById('btn-start')
   const btnClear = document.getElementById('btn-clear')
+  const fpsCount = document.getElementById('fps-count')
 
   if (!btnStart) {
     throw new Error("btn-start element not found!")
@@ -83,20 +133,14 @@ window.addEventListener('load', () => {
     throw new Error("btn-clear element not found")
   }
 
-  btnStart.addEventListener("click", () => {
-    btnStartPressed()
-    if (paused) {
-      if (btnClear.hasAttribute('disabled')) {
-        btnClear.removeAttribute('disabled')
-      }
+  if (!fpsCount) {
+    throw new Error("fps-count element not found")
+  }
 
-      btnStart.innerHTML = 'Start'
-    } else {
-      btnClear.setAttribute('disabled', 'true')
-      btnStart.innerHTML = 'Pause'
-    }
-  })
+  btnStart.addEventListener("click", btnStartPressed)
   btnClear.addEventListener("click", btnClearPressed)
+
+  fpsCount.addEventListener("change", fpsCountChanged)
 })
 
 // Initial setup
@@ -111,8 +155,8 @@ function setup() {
   primary = color('#10d53d')
   secondary = color('#320856')
 
-  // call draw() 10 times per second
-  frameRate(15)
+  fps = 30
+  frameRate(fps)
 }
 
 
@@ -129,6 +173,7 @@ function draw() {
       let currentState = state[i][j]
 
       if (paused) {
+        frameRate(60)
         if (x < width && j === 0 && i > 0) {
           stroke(96)
           strokeWeight(1)
@@ -156,7 +201,28 @@ function draw() {
     }
   }
   if (!paused) {
+    frameRate(fps)
+
+    // because p5 max fps is 60
+    // we should count pending frames
+    const fpsFactor = (fps / 60) - 1
+    if (fpsFactor > 0) {
+      pendingFrames += fpsFactor
+    }
+
     state = nextState()
+    // change state if there are > 1 pending frames
+    // for ex. pendingFrames = 2.5678200000000
+    // nextState will be called twice
+    while (pendingFrames >= 1) {
+      state = nextState()
+      pendingFrames -= 1
+    }
+
+    if (dead) {
+      btnStartPressed()
+    }
+
     loop()
   }
 }
@@ -193,6 +259,7 @@ function mouseMoved() {
 function nextState() {
   const next = getArray(cols, rows);
 
+  let changed = false
   // Compute next based on grid
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
@@ -203,14 +270,21 @@ function nextState() {
       let score = chunkScore(getChunk(state, i, j));
 
       if (currentState === 0 && score === 3) {
+        changed = true
         next[i][j] = 1;
       } else if (currentState === 1 && (score < 2 || score > 3)) {
+        changed = true
         next[i][j] = 0;
       } else {
         next[i][j] = currentState;
       }
     }
   }
+
+  if (!changed) {
+    dead = true
+  }
+
   return next
 }
 
