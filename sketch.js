@@ -12,41 +12,107 @@
 
 function getArray(cols, rows) {
   let arr = new Array(cols);
-  for (let i = 0; i < arr.length; i++) {
+  for (let i = 0; i < cols; i++) {
     arr[i] = new Array(rows);
   }
   return arr;
 }
 
+function getArrayZeros(cols, rows) {
+  let arr = getArray(cols, rows)
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      arr[i][j] = 0
+    }
+  }
+
+  return arr
+}
+
+function getArrayRandom(cols, rows) {
+  let arr = getArray(cols, rows);
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      state[i][j] = Math.random() > 0.4 ? 1 : 0
+    }
+  }
+
+  return arr
+}
+
 let state; // current state
 let cols;
 let rows;
-let resolution = 10;
+let resolution = 50;
+
+let paused = true
+
+let hoverPos;
 
 
 // Colors
 let primary
 let secondary
 
+function btnStartPressed() {
+  if (typeof paused === 'undefined') {
+    throw new Error('paused is undefined')
+  }
+
+  paused = !paused
+}
+
+function btnClearPressed() {
+  if (state && cols && rows) {
+    if (paused) {
+      state = getArrayZeros(cols, rows)
+    }
+  }
+}
+
+window.addEventListener('load', () => {
+  const btnStart = document.getElementById('btn-start')
+  const btnClear = document.getElementById('btn-clear')
+
+  if (!btnStart) {
+    throw new Error("btn-start element not found!")
+  }
+
+  if (!btnClear) {
+    throw new Error("btn-clear element not found")
+  }
+
+  btnStart.addEventListener("click", () => {
+    btnStartPressed()
+    if (paused) {
+      if (btnClear.hasAttribute('disabled')) {
+        btnClear.removeAttribute('disabled')
+      }
+
+      btnStart.innerHTML = 'Start'
+    } else {
+      btnClear.setAttribute('disabled', 'true')
+      btnStart.innerHTML = 'Pause'
+    }
+  })
+  btnClear.addEventListener("click", btnClearPressed)
+})
 
 // Initial setup
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 800);
+
   cols = width / resolution;
   rows = height / resolution;
 
-  state = getArray(cols, rows);
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      state[i][j] = Math.random() > 0.8 ? 1 : 0
-    }
-  }
+  state = getArrayZeros(cols, rows)
   primary = color('#10d53d')
   secondary = color('#320856')
 
   // call draw() 10 times per second
-  frameRate(20)
+  frameRate(15)
 }
 
 
@@ -62,6 +128,26 @@ function draw() {
 
       let currentState = state[i][j]
 
+      if (paused) {
+        if (x < width && j === 0 && i > 0) {
+          stroke(96)
+          strokeWeight(1)
+          line(x, 0, x, height)
+        }
+
+        if (y < height && i === 0 && j > 0) {
+          stroke(96)
+          strokeWeight(1)
+          line(0, y, width, y)
+        }
+
+        if (Array.isArray(hoverPos)) {
+          fill(128)
+          noStroke()
+          rect(hoverPos[0] * resolution, hoverPos[1] * resolution, resolution, resolution)
+        }
+      }
+
       if (currentState === 1) {
         fill(primary)
         noStroke()
@@ -69,8 +155,36 @@ function draw() {
       }
     }
   }
+  if (!paused) {
+    state = nextState()
+    loop()
+  }
+}
 
-  state = nextState()
+function mouseClicked() {
+  if (paused) {
+    if (!state) {
+      throw new Error("State is undefined")
+    }
+
+    const x = Math.floor(map(mouseX, 0, width, 0, cols))
+    const y = Math.floor(map(mouseY, 0, height, 0, rows))
+
+    state[x][y] = state[x][y] === 0 ? 1 : 0
+  }
+}
+
+function mouseMoved() {
+  if (paused) {
+    if (mouseX < width && mouseX > 0 && mouseY < height && mouseY > 0) {
+      const x = Math.floor(map(mouseX, 0, width, 0, cols))
+      const y = Math.floor(map(mouseY, 0, height, 0, rows))
+
+      hoverPos = [x, y]
+    } else {
+      hoverPos = null
+    }
+  }
 }
 
 

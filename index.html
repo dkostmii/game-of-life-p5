@@ -22,10 +22,45 @@
     main {
       margin: 30px;
     }
+
+    button {
+      background: none;
+      font-size: 24px;
+      color: white;
+      border-radius: 8px;
+      padding: 8px 24px;
+      border: 2px solid white;
+      outline-offset: 8px;
+
+      cursor: pointer;
+    }
+
+    button:active {
+      background: white;
+      color: black;
+    }
+
+    button:disabled, button:disabled:active {
+      opacity: 0.3;
+      cursor: default;
+      background: none;
+      color: white;
+    }
+
+
+    .controls {
+      display: flex;
+      gap: 24px;
+    }
   </style>
 </head>
 <body>
   <h1>Game of life p5.js</h1>
   <script src="sketch.js"></script>
+
+  <div class="controls">
+    <button id="btn-start">Start</button>
+    <button id="btn-clear">Clear</button>
+  </div>
 </body>
 </html>
