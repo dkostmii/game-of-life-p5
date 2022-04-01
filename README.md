@@ -13,6 +13,8 @@ You will need [Node.js](https://nodejs.org/en/) to easily install dependencies.
 
 ## Get started
 
+You can try it out [here](https://dkostmii.github.io/game-of-life-p5/) or run it **by yourself**:
+
 - Install dependencies by running:
         
         npm install
