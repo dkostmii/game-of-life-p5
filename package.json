@@ -1,0 +1,26 @@
+{
+  "name": "game-of-life-p5",
+  "version": "1.0.0",
+  "description": "Simple Cellular automata 2D (Conway's Game of Life) using [p5.js](https://p5js.org)",
+  "main": "sketch.js",
+  "scripts": {
+    "start": "npx browser-sync start --server -f -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dkostmii/game-of-life-p5.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dkostmii/game-of-life-p5/issues"
+  },
+  "homepage": "https://github.com/dkostmii/game-of-life-p5#readme",
+  "devDependencies": {
+    "browser-sync": "^2.27.9"
+  },
+  "dependencies": {
+    "p5": "^1.4.1"
+  }
+}
